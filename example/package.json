@@ -1,0 +1,16 @@
+{
+  "name": "pingmeup-example",
+  "version": "1.0.0",
+  "description": "Example application demonstrating PingMeUp notification system",
+  "main": "electron-app.js",
+  "scripts": {
+    "start": "electron electron-app.js",
+    "dev": "electron electron-app.js --dev"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "pingmeup": "file:.."
+  }
+}
