@@ -1,7 +1,7 @@
 {
-  "name": "@your-org/electron-notifications",
+  "name": "pingmeup",
   "version": "1.0.0",
-  "description": "Unified notification system for Electron applications with multiple types, themes, and OS-specific styling",
+  "description": "Professional notification system for Electron applications with 20+ notification types, rich content, animations, and cross-platform theming",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "scripts": {
@@ -15,9 +15,15 @@
     "desktop",
     "cross-platform",
     "toast",
-    "alerts"
+    "alerts",
+    "ping",
+    "pingmeup",
+    "achievement",
+    "progress",
+    "reply",
+    "interactive"
   ],
-  "author": "Your Name",
+  "author": "andytargino",
   "license": "MIT",
   "peerDependencies": {
     "electron": ">=20.0.0"
@@ -34,10 +40,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/electron-notifications"
+    "url": "https://github.com/andytargino/pingmeup"
   },
   "bugs": {
-    "url": "https://github.com/your-org/electron-notifications/issues"
+    "url": "https://github.com/andytargino/pingmeup/issues"
   },
-  "homepage": "https://github.com/your-org/electron-notifications#readme"
+  "homepage": "https://github.com/andytargino/pingmeup#readme"
 }
