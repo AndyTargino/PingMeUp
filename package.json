@@ -2,8 +2,8 @@
   "name": "pingmeup",
   "version": "1.0.0",
   "description": "Professional notification system for Electron applications with 20+ notification types, rich content, animations, and cross-platform theming",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
@@ -33,7 +33,7 @@
     "@types/node": "^20.0.0"
   },
   "files": [
-    "src/",
+    "dist/",
     "templates/",
     "styles/",
     "README.md"
