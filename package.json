@@ -1,0 +1,43 @@
+{
+  "name": "@your-org/electron-notifications",
+  "version": "1.0.0",
+  "description": "Unified notification system for Electron applications with multiple types, themes, and OS-specific styling",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepublish": "npm run build"
+  },
+  "keywords": [
+    "electron",
+    "notifications",
+    "desktop",
+    "cross-platform",
+    "toast",
+    "alerts"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "peerDependencies": {
+    "electron": ">=20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "files": [
+    "src/",
+    "templates/",
+    "styles/",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/electron-notifications"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/electron-notifications/issues"
+  },
+  "homepage": "https://github.com/your-org/electron-notifications#readme"
+}
