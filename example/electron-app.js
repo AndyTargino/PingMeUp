@@ -1,145 +1,113 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
+const { app, BrowserWindow } = require('electron');
 const { ElectronNotificationManager } = require('../dist/notification-manager');
 
 let mainWindow;
 let notificationManager;
 
 function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-        webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js')
-        }
-    });
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
 
-    mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadURL('data:text/html,<!DOCTYPE html><html><head><title>Notification Test</title></head><body><h1>Check your screen for notifications!</h1><p>Various notifications will appear automatically to test the system.</p></body></html>');
+  
+  // Initialize notification manager
+  notificationManager = new ElectronNotificationManager({
+    theme: 'windows', // or 'macos', 'linux', 'light', 'dark'
+    position: 'top-right'
+  });
+
+  // Test different notification types
+  setTimeout(() => testNotifications(), 1000);
 }
 
-function setupNotificationManager() {
-    notificationManager = new ElectronNotificationManager({
-        width: 420,
-        height: 120,
-        spacing: 20,
-        maxVisible: 6,
-        defaultDuration: 5000,
-        position: 'bottom-right',
-        animation: 'slide',
-        enableGrouping: true,
-        enableQueueing: true
-    });
+async function testNotifications() {
+  console.log('Starting notification tests...');
 
-    // Handle notification actions
-    ipcMain.handle('create-notification', async (event, data) => {
-        try {
-            const id = await notificationManager.create(data);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+  try {
+    // Test 1: Basic info notification (5 second default)
+    await notificationManager.info(
+      'Welcome!', 
+      'This is a basic info notification that will auto-close in 5 seconds.'
+    );
 
-    ipcMain.handle('create-info', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.info(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    setTimeout(async () => {
+      // Test 2: Success notification
+      await notificationManager.success(
+        'Success!', 
+        'Operation completed successfully.'
+      );
+    }, 1000);
 
-    ipcMain.handle('create-success', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.success(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    setTimeout(async () => {
+      // Test 3: Warning notification (7 second default)
+      await notificationManager.warning(
+        'Warning', 
+        'This is a warning message that stays a bit longer.'
+      );
+    }, 2000);
 
-    ipcMain.handle('create-warning', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.warning(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    setTimeout(async () => {
+      // Test 4: Error notification (no auto-close)
+      await notificationManager.error(
+        'Error!', 
+        'This error notification stays until you close it manually.'
+      );
+    }, 3000);
 
-    ipcMain.handle('create-error', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.error(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    setTimeout(async () => {
+      // Test 5: Custom notification with no auto-close
+      await notificationManager.show({
+        title: 'Custom Notification',
+        message: 'This notification will not auto-close (duration: 0).',
+        type: 'info',
+        duration: 0, // No auto-close
+        icon: '🔔'
+      });
+    }, 4000);
 
-    ipcMain.handle('create-progress', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.progress(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    setTimeout(async () => {
+      // Test 6: Quick notification
+      await notificationManager.show({
+        title: 'Quick Message',
+        message: 'This will close in 2 seconds.',
+        type: 'success',
+        duration: 2000
+      });
+    }, 5000);
 
-    ipcMain.handle('create-achievement', async (event, title, message, options) => {
-        try {
-            const id = await notificationManager.achievement(title, message, options);
-            return { success: true, id };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
+    console.log('All notification tests queued!');
 
-    ipcMain.handle('update-progress', async (event, id, progress) => {
-        notificationManager.updateProgress(id, progress);
-        return { success: true };
-    });
-
-    ipcMain.handle('close-notification', async (event, id) => {
-        try {
-            const success = await notificationManager.close(id);
-            return { success };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
-
-    ipcMain.handle('close-all', async () => {
-        try {
-            await notificationManager.closeAll();
-            return { success: true };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    });
-
-    // Handle notification interactions
-    ipcMain.on('reply-notification-response', (event, data) => {
-        console.log('Reply notification response:', data);
-        notificationManager.emit('notification-replied', data);
-    });
-
-    ipcMain.on('notification-action', (event, data) => {
-        console.log('Notification action:', data);
-        notificationManager.emit('notification-action', data);
-    });
+  } catch (error) {
+    console.error('Error during notification tests:', error);
+  }
 }
 
-app.whenReady().then(() => {
-    createWindow();
-    setupNotificationManager();
+app.whenReady().then(createWindow);
 
-    app.on('activate', function () {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    });
+app.on('window-all-closed', () => {
+  if (notificationManager) {
+    notificationManager.closeAll();
+  }
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
-app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit();
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+// Handle notification manager events
+process.on('exit', () => {
+  if (notificationManager) {
+    notificationManager.closeAll();
+  }
 });
