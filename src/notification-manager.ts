@@ -318,12 +318,14 @@ export class ElectronNotificationManager extends EventEmitter implements Notific
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js')
+        preload: path.join(__dirname, '../src/preload.js')
       }
     });
 
     // Load the unified notification template
-    await window.loadFile(path.join(__dirname, '../templates/notification.html'));
+    const templatePath = path.join(__dirname, '../templates/notification.html');
+    console.log('Loading template from:', templatePath);
+    await window.loadFile(templatePath);
 
     // Send notification data when ready
     window.webContents.once('dom-ready', () => {
