@@ -313,7 +313,7 @@ class ElectronNotificationManager extends events_1.EventEmitter {
             webPreferences: {
                 nodeIntegration: false,
                 contextIsolation: true,
-                preload: path.join(__dirname, '../src/preload.js')
+                preload: path.join(__dirname, 'preload.js')
             }
         });
         // Load the unified notification template
@@ -322,6 +322,7 @@ class ElectronNotificationManager extends events_1.EventEmitter {
         await window.loadFile(templatePath);
         // Send notification data when ready
         window.webContents.once('dom-ready', () => {
+            console.log('DOM ready, sending notification data:', notificationData);
             window.webContents.send('notification-data', notificationData);
             this.playSound(notificationData);
             this.updateStats('shown');
@@ -334,11 +335,17 @@ class ElectronNotificationManager extends events_1.EventEmitter {
             this.processQueue();
             this.emit('notification-closed', id);
         });
-        window.webContents.on('dom-ready', () => {
-            this.updateStats('clicked');
-            this.emit('notification-clicked', id, notificationData);
-            if (this.config.clickToClose && this.shouldAutoClose(notificationData)) {
-                this.close(id);
+        window.webContents.on('did-finish-load', () => {
+            console.log('Window finished loading, sending notification data again:', notificationData);
+            window.webContents.send('notification-data', notificationData);
+        });
+        window.webContents.on('before-input-event', (event, input) => {
+            if (input.type === 'mouseDown') {
+                this.updateStats('clicked');
+                this.emit('notification-clicked', id, notificationData);
+                if (this.config.clickToClose && this.shouldAutoClose(notificationData)) {
+                    this.close(id);
+                }
             }
         });
         // Store window reference

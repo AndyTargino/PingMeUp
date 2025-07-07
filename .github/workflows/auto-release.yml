@@ -127,6 +127,21 @@ jobs:
           fi
         fi
         
+        # Check if this version already exists as a tag and increment if needed
+        while git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; do
+          echo "Tag v$NEW_VERSION already exists, incrementing..."
+          if [ "$BUMP_TYPE" = "major" ]; then
+            MAJOR=$((MAJOR + 1))
+            NEW_VERSION="$MAJOR.0.0"
+          elif [ "$BUMP_TYPE" = "minor" ]; then
+            MINOR=$((MINOR + 1))
+            NEW_VERSION="$MAJOR.$MINOR.0"
+          else
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+        done
+        
         echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
         

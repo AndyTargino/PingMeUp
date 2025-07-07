@@ -1138,6 +1138,14 @@ html, body {
         let animationTimeouts = [];
         let progressInterval = null;
         
+        // Show a default notification if no data is received after 2 seconds
+        setTimeout(() => {
+            if (!notificationData) {
+                console.log('No notification data received, showing default content');
+                setupDefaultNotification();
+            }
+        }, 2000);
+        
         // Enhanced icon library
         const NOTIFICATION_ICONS = {
             // Basic types
@@ -1185,40 +1193,51 @@ html, body {
             close: 'Close'
         };
 
-        // Main notification data handler
-        window.electronAPI.ipcRenderer.on('notification-data', (event, data) => {
-            console.log('Received notification data:', data);
-            notificationData = data;
-            notificationId = data.id;
-            setupNotification(data);
-        });
+        // Check if electronAPI is available
+        if (window.electronAPI && window.electronAPI.ipcRenderer) {
+            console.log('ElectronAPI found, setting up IPC listeners');
+            
+            // Main notification data handler
+            window.electronAPI.ipcRenderer.on('notification-data', (event, data) => {
+                console.log('Received notification data:', data);
+                notificationData = data;
+                notificationId = data.id;
+                setupNotification(data);
+            });
+        } else {
+            console.error('ElectronAPI not found! Preload script may not be working.');
+            setTimeout(() => setupDefaultNotification(), 500);
+        }
 
-        // Update handler
-        window.electronAPI.ipcRenderer.on('notification-update', (event, data) => {
-            console.log('Received notification update:', data);
-            notificationData = { ...notificationData, ...data };
-            updateNotificationContent(notificationData);
-        });
+        // Set up additional handlers only if electronAPI is available
+        if (window.electronAPI && window.electronAPI.ipcRenderer) {
+            // Update handler
+            window.electronAPI.ipcRenderer.on('notification-update', (event, data) => {
+                console.log('Received notification update:', data);
+                notificationData = { ...notificationData, ...data };
+                updateNotificationContent(notificationData);
+            });
 
-        // Progress update handler
-        window.electronAPI.ipcRenderer.on('progress-update', (event, progress) => {
-            console.log('Progress update:', progress);
-            updateProgress(progress);
-        });
+            // Progress update handler
+            window.electronAPI.ipcRenderer.on('progress-update', (event, progress) => {
+                console.log('Progress update:', progress);
+                updateProgress(progress);
+            });
 
-        // Progress indeterminate handler
-        window.electronAPI.ipcRenderer.on('progress-indeterminate', (event, indeterminate) => {
-            setProgressIndeterminate(indeterminate);
-        });
+            // Progress indeterminate handler
+            window.electronAPI.ipcRenderer.on('progress-indeterminate', (event, indeterminate) => {
+                setProgressIndeterminate(indeterminate);
+            });
 
-        // Animation handlers
-        window.electronAPI.ipcRenderer.on('play-animation', (event, animation) => {
-            playEntranceAnimation(animation);
-        });
+            // Animation handlers
+            window.electronAPI.ipcRenderer.on('play-animation', (event, animation) => {
+                playEntranceAnimation(animation);
+            });
 
-        window.electronAPI.ipcRenderer.on('play-close-animation', () => {
-            playExitAnimation();
-        });
+            window.electronAPI.ipcRenderer.on('play-close-animation', () => {
+                playExitAnimation();
+            });
+        }
 
         function setupNotification(data) {
             const container = document.getElementById('notificationContainer');
@@ -1732,22 +1751,24 @@ html, body {
                     return;
                 }
                 
-                window.electronAPI.ipcRenderer.send('reply-notification-response', { 
-                    id: notificationId, 
-                    response: response 
-                });
+                if (window.electronAPI && window.electronAPI.ipcRenderer) {
+                    window.electronAPI.ipcRenderer.send('reply-notification-response', { 
+                        id: notificationId, 
+                        response: response 
+                    });
+                }
                 closeNotification();
             }
         }
 
         function cancelReply() {
-            if (notificationId) {
+            if (notificationId && window.electronAPI && window.electronAPI.ipcRenderer) {
                 window.electronAPI.ipcRenderer.send('reply-notification-response', { 
                     id: notificationId, 
                     response: null 
                 });
-                closeNotification();
             }
+            closeNotification();
         }
 
         function handleActionClick(actionId, action) {
@@ -1888,6 +1909,23 @@ html, body {
             e.preventDefault();
         });
 
+        function setupDefaultNotification() {
+            console.log('Setting up default notification content');
+            const defaultData = {
+                id: 'default-notification',
+                type: 'info',
+                title: 'Test Notification',
+                message: 'This is a test notification to verify the system is working.',
+                theme: 'windows',
+                colorScheme: 'light',
+                priority: 'normal'
+            };
+            
+            notificationData = defaultData;
+            notificationId = defaultData.id;
+            setupNotification(defaultData);
+        }
+        
         // Cleanup on unload
         window.addEventListener('beforeunload', () => {
             animationTimeouts.forEach(timeout => clearTimeout(timeout));
