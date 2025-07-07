@@ -1,56 +1,46 @@
 import { EventEmitter } from 'events';
-import { NotificationData, NotificationConfig, NotificationWindow, NotificationManager, NotificationType, NotificationStats } from './types';
-export declare class ElectronNotificationManager extends EventEmitter implements NotificationManager {
-    private windows;
-    private groups;
-    private notificationQueue;
-    private config;
+export interface NotificationOptions {
+    title: string;
+    message: string;
+    type?: 'info' | 'success' | 'warning' | 'error';
+    duration?: number;
+    icon?: string;
+    theme?: 'light' | 'dark' | 'windows' | 'macos' | 'linux';
+    clickToClose?: boolean;
+    position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+}
+export declare class ElectronNotificationManager extends EventEmitter {
+    private notifications;
     private idCounter;
-    private stats;
-    private processingQueue;
-    constructor(config?: NotificationConfig);
-    private setupEventHandlers;
-    private detectSystemTheme;
-    private getSystemColorScheme;
-    private generateId;
-    private calculateNotificationHeight;
+    private defaultOptions;
+    constructor(defaultOptions?: Partial<NotificationOptions>);
+    /**
+     * Show a notification
+     */
+    show(options: NotificationOptions): Promise<string>;
+    /**
+     * Close a specific notification
+     */
+    close(id: string): void;
+    /**
+     * Close all notifications
+     */
+    closeAll(): void;
+    /**
+     * Get active notification count
+     */
+    getActiveCount(): number;
+    private createNotificationWindow;
+    private setupWindowHandlers;
     private calculatePosition;
-    private repositionAllWindows;
-    private updateAllWindowsTheme;
-    private playSound;
-    private shouldAutoClose;
-    private updateStats;
-    create(data: NotificationData): Promise<string>;
-    private showWindowWithAnimation;
-    private getVisibleCount;
-    update(id: string, data: Partial<NotificationData>): Promise<boolean>;
-    close(id: string): Promise<boolean>;
-    closeAll(): Promise<void>;
-    closeByCategory(category: string): Promise<void>;
-    closeByType(type: NotificationType): Promise<void>;
-    updateProgress(id: string, progress: number): void;
-    setProgressIndeterminate(id: string, indeterminate: boolean): void;
-    queueNotification(data: NotificationData): Promise<string>;
-    processQueue(): Promise<void>;
-    clearQueue(): void;
-    createGroup(category: string): void;
-    collapseGroup(category: string): void;
-    expandGroup(category: string): void;
-    getActive(): NotificationWindow[];
-    getByCategory(category: string): NotificationWindow[];
-    getStats(): NotificationStats;
-    updateConfig(config: Partial<NotificationConfig>): void;
-    getConfig(): NotificationConfig;
-    info(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    success(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    warning(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    error(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    progress(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    reply(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    achievement(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    download(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    confirmation(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    reminder(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
-    weather(title: string, message: string, options?: Partial<NotificationData>): Promise<string>;
+    private repositionNotifications;
+    private detectSystemTheme;
+    /**
+     * Convenience methods for different notification types
+     */
+    info(title: string, message: string, duration?: number): Promise<string>;
+    success(title: string, message: string, duration?: number): Promise<string>;
+    warning(title: string, message: string, duration?: number): Promise<string>;
+    error(title: string, message: string, duration?: number): Promise<string>;
 }
 //# sourceMappingURL=notification-manager.d.ts.map

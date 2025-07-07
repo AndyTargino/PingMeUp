@@ -1,5 +1,5 @@
-export * from './types';
-export * from './notification-manager';
+// Main exports
+export { ElectronNotificationManager, NotificationOptions } from './notification-manager';
 
-// Re-export main class as default
+// Re-export as default for convenience
 export { ElectronNotificationManager as default } from './notification-manager';

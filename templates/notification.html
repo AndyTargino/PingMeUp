@@ -1,1906 +1,433 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PingMeUp Notification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification</title>
     <style>
-/* PingMeUp - Professional Notification System CSS */
-:root {
-    /* macOS Theme Variables */
-    --font-family-macos: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-    --bg-color-macos-light: rgba(255, 255, 255, 0.95);
-    --bg-color-macos-dark: rgba(50, 50, 50, 0.95);
-    --border-color-macos-light: rgba(0, 0, 0, 0.08);
-    --border-color-macos-dark: rgba(255, 255, 255, 0.1);
-    --shadow-macos: 0 8px 32px rgba(0, 0, 0, 0.15);
-    --blur-macos: blur(20px) saturate(180%);
-
-    /* Windows Theme Variables */
-    --font-family-windows: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
-    --bg-color-windows-light: rgba(248, 249, 250, 0.95);
-    --bg-color-windows-dark: rgba(32, 32, 32, 0.95);
-    --border-color-windows-light: rgba(0, 0, 0, 0.12);
-    --border-color-windows-dark: rgba(255, 255, 255, 0.12);
-    --shadow-windows: 0 4px 20px rgba(0, 0, 0, 0.12);
-    --blur-windows: blur(16px) saturate(150%);
-
-    /* Linux Theme Variables */
-    --font-family-linux: 'Ubuntu', 'Cantarell', 'Roboto', system-ui, sans-serif;
-    --bg-color-linux-light: rgba(250, 250, 250, 0.95);
-    --bg-color-linux-dark: rgba(46, 52, 64, 0.95);
-    --border-color-linux-light: rgba(0, 0, 0, 0.15);
-    --border-color-linux-dark: rgba(255, 255, 255, 0.15);
-    --shadow-linux: 0 4px 16px rgba(0, 0, 0, 0.1);
-
-    /* Priority Colors */
-    --priority-low: #6c757d;
-    --priority-normal: #0078d4;
-    --priority-high: #ff8c00;
-    --priority-critical: #d13438;
-
-    /* Type Colors */
-    --color-info: #0078d4;
-    --color-success: #107c10;
-    --color-warning: #ff8c00;
-    --color-error: #d13438;
-    --color-achievement: #ffd700;
-    --color-weather: #87ceeb;
-    --color-reminder: #ff69b4;
-
-    /* Animation Durations */
-    --duration-fast: 0.15s;
-    --duration-normal: 0.3s;
-    --duration-slow: 0.5s;
-}
-
-/* Base Styles */
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    font-family: var(--font-family-windows);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* Notification Container */
-.notification-container {
-    width: 420px;
-    min-height: 120px;
-    max-height: 600px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    position: relative;
-    box-sizing: border-box;
-    backdrop-filter: var(--blur-windows);
-    -webkit-backdrop-filter: var(--blur-windows);
-    background: var(--bg-color-windows-light);
-    border: 1px solid var(--border-color-windows-light);
-    box-shadow: var(--shadow-windows);
-    overflow: hidden;
-    
-    /* Animation states */
-    opacity: 0;
-    transform: translateX(100%) scale(0.95);
-    transition: all var(--duration-normal) cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Priority Indicator */
-.priority-indicator {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
-    background: var(--priority-normal);
-    opacity: 0;
-    transform: scaleY(0);
-    transition: all var(--duration-normal) ease;
-}
-
-.notification-container.priority-low .priority-indicator {
-    background: var(--priority-low);
-}
-
-.notification-container.priority-high .priority-indicator {
-    background: var(--priority-high);
-}
-
-.notification-container.priority-critical .priority-indicator {
-    background: var(--priority-critical);
-    width: 6px;
-}
-
-.notification-container.show .priority-indicator {
-    opacity: 1;
-    transform: scaleY(1);
-}
-
-/* Badge */
-.notification-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ff4757;
-    color: white;
-    border-radius: 50%;
-    min-width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    z-index: 10;
-    transform: scale(0);
-    transition: transform var(--duration-normal) cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.notification-container.show .notification-badge {
-    transform: scale(1);
-}
-
-/* Main Content Area */
-.notification-main {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    flex: 1;
-}
-
-.notification-icon {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    background: rgba(0, 120, 212, 0.1);
-    color: var(--color-info);
-    transition: all var(--duration-normal) ease;
-}
-
-.notification-content {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.notification-title {
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 1.4;
-    margin-bottom: 6px;
-    color: #1a1a1a;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.notification-subtitle {
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 1.3;
-    margin-bottom: 4px;
-    color: #666;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.notification-message {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #4a4a4a;
-    word-wrap: break-word;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    margin-bottom: 8px;
-}
-
-.notification-time {
-    font-size: 12px;
-    font-weight: 500;
-    color: #888;
-    opacity: 0.8;
-}
-
-.notification-close {
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: #666;
-    background: transparent;
-    transition: all var(--duration-fast) ease;
-    flex-shrink: 0;
-    opacity: 0.6;
-}
-
-.notification-close:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.08);
-    transform: scale(1.1);
-}
-
-.notification-close:active {
-    transform: scale(0.95);
-}
-
-/* Rich Content */
-.notification-image {
-    margin: 12px 0;
-    border-radius: 8px;
-    overflow: hidden;
-    max-height: 120px;
-}
-
-.notification-image img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    display: block;
-}
-
-/* Achievement Content */
-.achievement-content {
-    margin: 12px 0;
-    text-align: center;
-    position: relative;
-}
-
-.achievement-level {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--color-achievement);
-    margin-bottom: 4px;
-}
-
-.achievement-points {
-    font-size: 14px;
-    font-weight: 600;
-    color: #666;
-}
-
-.confetti-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.confetti-piece {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 2px;
-    animation: confetti-fall 3s linear infinite;
-}
-
-@keyframes confetti-fall {
-    to {
-        transform: translateY(200px) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-/* Weather Content */
-.weather-content {
-    margin: 12px 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 12px;
-    background: rgba(135, 206, 235, 0.1);
-    border-radius: 8px;
-}
-
-.weather-main {
-    text-align: center;
-}
-
-.weather-temperature {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--color-weather);
-    margin-bottom: 4px;
-}
-
-.weather-condition {
-    font-size: 14px;
-    color: #666;
-}
-
-.weather-details {
-    font-size: 12px;
-    color: #888;
-}
-
-.weather-humidity,
-.weather-location {
-    margin-bottom: 4px;
-}
-
-/* Update Content */
-.update-content {
-    margin: 12px 0;
-    padding: 12px;
-    background: rgba(0, 120, 212, 0.05);
-    border-radius: 8px;
-    border-left: 4px solid var(--color-info);
-}
-
-.update-version {
-    font-weight: 600;
-    color: var(--color-info);
-    margin-bottom: 4px;
-}
-
-.mandatory-badge {
-    background: var(--color-error);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-/* Progress Container */
-.progress-container {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.progress-bar-container {
-    position: relative;
-    background: rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    height: 8px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-info), #45b7d1);
-    border-radius: 8px;
-    width: 0%;
-    transition: width var(--duration-normal) ease;
-    position: relative;
-}
-
-.progress-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: progress-shine 1.5s infinite;
-}
-
-@keyframes progress-shine {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.progress-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(0, 120, 212, 0.2);
-    border-top: 2px solid var(--color-info);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.progress-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.progress-text {
-    font-weight: 600;
-}
-
-.progress-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.progress-pause,
-.progress-cancel {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all var(--duration-fast) ease;
-}
-
-.progress-pause:hover,
-.progress-cancel:hover {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: #bbb;
-}
-
-/* Reply Container */
-.reply-container {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.input-container {
-    margin-bottom: 12px;
-}
-
-.reply-input,
-.reply-textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    background: white;
-    transition: all var(--duration-fast) ease;
-    box-sizing: border-box;
-    resize: none;
-}
-
-.reply-input:focus,
-.reply-textarea:focus {
-    outline: none;
-    border-color: var(--color-info);
-    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
-}
-
-.reply-input.invalid,
-.reply-textarea.invalid {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 3px rgba(209, 52, 56, 0.1);
-}
-
-.reply-textarea {
-    min-height: 80px;
-}
-
-.reply-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-
-.reply-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    transition: all var(--duration-fast) ease;
-    min-width: 80px;
-}
-
-.reply-button.send {
-    background: var(--color-info);
-    color: white;
-}
-
-.reply-button.send:hover {
-    background: #106ebe;
-    transform: translateY(-1px);
-}
-
-.reply-button.cancel {
-    background: #f8f9fa;
-    color: #666;
-    border: 1px solid #e0e0e0;
-}
-
-.reply-button.cancel:hover {
-    background: #e9ecef;
-}
-
-.input-validation {
-    color: var(--color-error);
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 500;
-}
-
-/* Action Buttons */
-.action-buttons {
-    margin-top: 16px;
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-}
-
-.action-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    transition: all var(--duration-fast) ease;
-    min-width: 100px;
-    position: relative;
-    overflow: hidden;
-}
-
-.action-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s;
-}
-
-.action-button:active::before {
-    width: 200px;
-    height: 200px;
-}
-
-.action-button.primary {
-    background: var(--color-info);
-    color: white;
-}
-
-.action-button.primary:hover {
-    background: #106ebe;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
-}
-
-.action-button.secondary {
-    background: #f8f9fa;
-    color: #495057;
-    border: 1px solid #e0e0e0;
-}
-
-.action-button.secondary:hover {
-    background: #e9ecef;
-    border-color: #ccc;
-}
-
-.action-button.danger {
-    background: var(--color-error);
-    color: white;
-}
-
-.action-button.danger:hover {
-    background: #c82333;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(209, 52, 56, 0.3);
-}
-
-/* Snooze Options */
-.snooze-options {
-    margin-top: 12px;
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.snooze-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 12px;
-}
-
-.snooze-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.snooze-btn {
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    transition: all var(--duration-fast) ease;
-}
-
-.snooze-btn:hover {
-    background: var(--color-info);
-    color: white;
-    border-color: var(--color-info);
-    transform: translateY(-1px);
-}
-
-/* Auto-close Progress Bar */
-.notification-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background: var(--color-info);
-    width: 100%;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    transform-origin: left;
-    transform: scaleX(1);
-}
-
-@keyframes progress {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-}
-
-/* Type-specific colors */
-.notification-container.success {
-    border-left: 4px solid var(--color-success);
-}
-
-.notification-container.success .notification-icon {
-    background: rgba(16, 124, 16, 0.1);
-    color: var(--color-success);
-}
-
-.notification-container.success .notification-progress,
-.notification-container.success .progress-bar {
-    background: linear-gradient(90deg, var(--color-success), #28a745);
-}
-
-.notification-container.warning {
-    border-left: 4px solid var(--color-warning);
-}
-
-.notification-container.warning .notification-icon {
-    background: rgba(255, 140, 0, 0.1);
-    color: var(--color-warning);
-}
-
-.notification-container.warning .notification-progress,
-.notification-container.warning .progress-bar {
-    background: linear-gradient(90deg, var(--color-warning), #ffa726);
-}
-
-.notification-container.error {
-    border-left: 4px solid var(--color-error);
-}
-
-.notification-container.error .notification-icon {
-    background: rgba(209, 52, 56, 0.1);
-    color: var(--color-error);
-}
-
-.notification-container.error .notification-progress,
-.notification-container.error .progress-bar {
-    background: linear-gradient(90deg, var(--color-error), #e74c3c);
-}
-
-.notification-container.achievement {
-    border-left: 4px solid var(--color-achievement);
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 140, 0, 0.05));
-}
-
-.notification-container.achievement .notification-icon {
-    background: rgba(255, 215, 0, 0.2);
-    color: var(--color-achievement);
-}
-
-/* Theme Variations */
-.notification-container.theme-macos {
-    font-family: var(--font-family-macos);
-    background: var(--bg-color-macos-light);
-    border: 1px solid var(--border-color-macos-light);
-    box-shadow: var(--shadow-macos);
-    border-radius: 16px;
-    backdrop-filter: var(--blur-macos);
-    -webkit-backdrop-filter: var(--blur-macos);
-}
-
-.notification-container.theme-macos .notification-close {
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-}
-
-.notification-container.theme-linux {
-    font-family: var(--font-family-linux);
-    background: var(--bg-color-linux-light);
-    border: 1px solid var(--border-color-linux-light);
-    box-shadow: var(--shadow-linux);
-    border-radius: 8px;
-}
-
-/* Dark Theme */
-.notification-container.dark {
-    color: #e0e0e0;
-}
-
-.notification-container.theme-macos.dark {
-    background: var(--bg-color-macos-dark);
-    border-color: var(--border-color-macos-dark);
-}
-
-.notification-container.theme-windows.dark {
-    background: var(--bg-color-windows-dark);
-    border-color: var(--border-color-windows-dark);
-}
-
-.notification-container.theme-linux.dark {
-    background: var(--bg-color-linux-dark);
-    border-color: var(--border-color-linux-dark);
-}
-
-.notification-container.dark .notification-title {
-    color: #ffffff;
-}
-
-.notification-container.dark .notification-subtitle {
-    color: #cccccc;
-}
-
-.notification-container.dark .notification-message {
-    color: #c3c3c3;
-}
-
-.notification-container.dark .notification-time {
-    color: #aaaaaa;
-}
-
-.notification-container.dark .notification-close {
-    color: #aaaaaa;
-}
-
-.notification-container.dark .notification-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.notification-container.dark .reply-input,
-.notification-container.dark .reply-textarea {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-}
-
-.notification-container.dark .reply-button.cancel {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ccc;
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.notification-container.dark .progress-bar-container {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Animations */
-.notification-container.show {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-}
-
-.notification-container.hiding {
-    opacity: 0;
-    transform: translateX(100%) scale(0.95);
-    transition: all var(--duration-fast) ease-in;
-}
-
-/* Animation Variants */
-.notification-container.animate-bounce {
-    animation: bounce-in var(--duration-slow) cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes bounce-in {
-    0% {
-        opacity: 0;
-        transform: translateX(100%) scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: translateX(-10px) scale(1.05);
-    }
-    70% {
-        transform: translateX(5px) scale(0.98);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-.notification-container.animate-zoom {
-    animation: zoom-in var(--duration-normal) ease-out;
-}
-
-@keyframes zoom-in {
-    0% {
-        opacity: 0;
-        transform: scale(0.5) rotate(180deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-.notification-container.animate-flip {
-    animation: flip-in var(--duration-slow) ease-out;
-}
-
-@keyframes flip-in {
-    0% {
-        opacity: 0;
-        transform: perspective(400px) rotateY(-90deg) translateX(100%);
-    }
-    40% {
-        transform: perspective(400px) rotateY(-10deg) translateX(0);
-    }
-    70% {
-        transform: perspective(400px) rotateY(10deg);
-    }
-    100% {
-        opacity: 1;
-        transform: perspective(400px) rotateY(0deg);
-    }
-}
-
-.notification-container.animate-fade {
-    animation: fade-in var(--duration-normal) ease-out;
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.notification-container.animate-slide {
-    animation: slide-in var(--duration-normal) cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@keyframes slide-in {
-    0% {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Gradient Background for Achievements */
-.notification-container.gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.notification-container.gradient-bg .notification-title,
-.notification-container.gradient-bg .notification-message {
-    color: white;
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-    .notification-container {
-        width: calc(100vw - 40px);
-        min-width: 320px;
-        max-width: 420px;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .action-button {
-        width: 100%;
-    }
-}
-
-@media (max-height: 300px) {
-    .notification-container {
-        min-height: 80px;
-        padding: 16px;
-    }
-    
-    .notification-message {
-        -webkit-line-clamp: 2;
-        max-height: 40px;
-    }
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .notification-container,
-    .notification-container * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-.notification-container:focus-within {
-    outline: 2px solid var(--color-info);
-    outline-offset: 2px;
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-    .notification-container {
-        border: 2px solid;
-    }
-    
-    .notification-icon {
-        border: 1px solid;
-    }
-    
-    .action-button,
-    .reply-button {
-        border: 2px solid;
-    }
-}
-
-/* Print Styles */
-@media print {
-    .notification-container {
-        background: white !important;
-        color: black !important;
-        box-shadow: none !important;
-        border: 1px solid black !important;
-    }
-}
-
-/* Custom Scrollbar */
-.notification-message::-webkit-scrollbar,
-.reply-textarea::-webkit-scrollbar {
-    width: 4px;
-}
-
-.notification-message::-webkit-scrollbar-track,
-.reply-textarea::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.notification-message::-webkit-scrollbar-thumb,
-.reply-textarea::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-}
-
-.notification-message::-webkit-scrollbar-thumb:hover,
-.reply-textarea::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.4);
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+            -webkit-app-region: no-drag;
+        }
+
+        .notification {
+            width: 350px;
+            min-height: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            position: relative;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        /* Theme variations */
+        .notification.theme-dark {
+            background: rgba(45, 45, 45, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .notification.theme-windows {
+            border-radius: 4px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .notification.theme-macos {
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+        }
+
+        .notification.theme-linux {
+            border-radius: 6px;
+            font-family: Ubuntu, 'Liberation Sans', sans-serif;
+        }
+
+        /* Type variations */
+        .notification.type-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.type-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .notification.type-warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .notification.type-info {
+            border-left: 4px solid #007bff;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .type-success .icon {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .type-error .icon {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .type-warning .icon {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .type-info .icon {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            color: inherit;
+        }
+
+        .message {
+            font-size: 13px;
+            line-height: 1.3;
+            color: rgba(0, 0, 0, 0.7);
+            word-wrap: break-word;
+        }
+
+        .theme-dark .message {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .theme-dark .close-btn {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .theme-dark .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #007bff;
+            border-radius: 0 0 8px 8px;
+            transform-origin: left;
+            transform: scaleX(1);
+            transition: transform linear;
+        }
+
+        .type-success .progress-bar {
+            background: #28a745;
+        }
+
+        .type-error .progress-bar {
+            background: #dc3545;
+        }
+
+        .type-warning .progress-bar {
+            background: #ffc107;
+        }
+
+        @keyframes progress {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .notification {
+                width: calc(100vw - 20px);
+                margin: 0 10px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="notificationContainer" class="notification-container">
-        <!-- Priority indicator -->
-        <div class="priority-indicator"></div>
-        
-        <!-- Main notification content -->
-        <div class="notification-main">
-            <!-- Badge (for grouped notifications) -->
-            <div class="notification-badge" style="display: none;">
-                <span class="badge-count">0</span>
-            </div>
-            
-            <!-- Icon -->
-            <div class="notification-icon"></div>
-            
-            <!-- Content area -->
-            <div class="notification-content">
-                <div class="notification-title"></div>
-                <div class="notification-subtitle" style="display: none;"></div>
-                <div class="notification-message"></div>
-                <div class="notification-time"></div>
-                
-                <!-- Rich content area -->
-                <div class="notification-image" style="display: none;">
-                    <img src="" alt="Notification image" />
-                </div>
-                
-                <!-- Achievement specific content -->
-                <div class="achievement-content" style="display: none;">
-                    <div class="achievement-level"></div>
-                    <div class="achievement-points"></div>
-                    <div class="confetti-container"></div>
-                </div>
-                
-                <!-- Weather specific content -->
-                <div class="weather-content" style="display: none;">
-                    <div class="weather-main">
-                        <div class="weather-temperature"></div>
-                        <div class="weather-condition"></div>
-                    </div>
-                    <div class="weather-details">
-                        <div class="weather-humidity"></div>
-                        <div class="weather-location"></div>
-                    </div>
-                </div>
-                
-                <!-- Update/System specific content -->
-                <div class="update-content" style="display: none;">
-                    <div class="update-version"></div>
-                    <div class="update-mandatory" style="display: none;">
-                        <span class="mandatory-badge">Required</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Close button -->
-            <div class="notification-close" onclick="closeNotification()">&#x2715;</div>
+    <div class="notification" id="notification">
+        <div class="icon" id="icon">ℹ️</div>
+        <div class="content">
+            <div class="title" id="title">Notification</div>
+            <div class="message" id="message">This is a notification message</div>
         </div>
-        
-        <!-- Progress Bar (for progress-type notifications) -->
-        <div class="progress-container" style="display: none;">
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
-                <div class="progress-spinner" style="display: none;"></div>
-            </div>
-            <div class="progress-details">
-                <div class="progress-text">0%</div>
-                <div class="progress-speed" style="display: none;"></div>
-                <div class="progress-time" style="display: none;"></div>
-            </div>
-            <div class="progress-actions" style="display: none;">
-                <button class="progress-pause" onclick="pauseProgress()">⏸</button>
-                <button class="progress-cancel" onclick="cancelProgress()">✕</button>
-            </div>
-        </div>
-        
-        <!-- Reply Input (for reply-type notifications) -->
-        <div class="reply-container" style="display: none;">
-            <div class="input-container">
-                <input type="text" class="reply-input" placeholder="">
-                <textarea class="reply-textarea" placeholder="" style="display: none;"></textarea>
-            </div>
-            <div class="reply-buttons">
-                <button class="reply-button send" onclick="sendReply()">Send</button>
-                <button class="reply-button cancel" onclick="cancelReply()">Cancel</button>
-            </div>
-            <div class="input-validation" style="display: none;"></div>
-        </div>
-        
-        <!-- Action Buttons (for confirmation, reminder, etc.) -->
-        <div class="action-buttons" style="display: none;"></div>
-        
-        <!-- Snooze Options (for reminders) -->
-        <div class="snooze-options" style="display: none;">
-            <div class="snooze-title">Snooze for:</div>
-            <div class="snooze-buttons">
-                <button class="snooze-btn" data-minutes="5">5 min</button>
-                <button class="snooze-btn" data-minutes="15">15 min</button>
-                <button class="snooze-btn" data-minutes="30">30 min</button>
-                <button class="snooze-btn" data-minutes="60">1 hour</button>
-            </div>
-        </div>
-        
-        <!-- Auto-close progress bar -->
-        <div class="notification-progress"></div>
-        
-        <!-- Drag handle -->
-        <div class="drag-handle" style="display: none;"></div>
+        <button class="close-btn" id="closeBtn" onclick="closeNotification()">×</button>
+        <div class="progress-bar" id="progressBar"></div>
     </div>
 
     <script>
-        console.log('PingMeUp notification system loaded');
-        
+        // Global error handling with terminal logging
+        window.addEventListener('error', (e) => {
+            console.error('[NOTIFICATION ERROR]', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                error: e.error
+            });
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('[NOTIFICATION UNHANDLED REJECTION]', e.reason);
+        });
+
+        console.log('[NOTIFICATION] Template loaded successfully');
+
         let notificationData = null;
-        let notificationId = null;
-        let animationTimeouts = [];
-        let progressInterval = null;
-        
-        // Show a default notification if no data is received after 2 seconds
-        setTimeout(() => {
-            if (!notificationData) {
-                console.log('No notification data received, showing default content');
-                setupDefaultNotification();
-            }
-        }, 2000);
-        
-        // Enhanced icon library
-        const NOTIFICATION_ICONS = {
-            // Basic types
-            info: '&#x2139;',        // ℹ️
-            success: '&#x2714;',     // ✅
-            warning: '&#x26A0;',     // ⚠️
-            error: '&#x274C;',       // ❌
-            custom: '&#x1F514;',     // 🔔
-            
-            // Interactive types
-            progress: '&#x1F552;',   // 🕒
-            reply: '&#x1F4DD;',      // 📝
-            confirmation: '&#x2753;', // ❓
-            input: '&#x270F;',       // ✏️
-            
-            // Advanced types
-            achievement: '&#x1F3C6;', // 🏆
-            update: '&#x1F504;',     // 🔄
-            download: '&#x2B07;',    // ⬇️
-            upload: '&#x2B06;',      // ⬆️
-            system: '&#x2699;',      // ⚙️
-            security: '&#x1F512;',   // 🔒
-            reminder: '&#x23F0;',    // ⏰
-            calendar: '&#x1F4C5;',   // 📅
-            
-            // Creative types
-            loading: '&#x23F3;',     // ⏳
-            celebration: '&#x1F389;', // 🎉
-            weather: '&#x2601;',     // ☁️
-            notification: '&#x1F4E2;', // 📢
-            alert: '&#x1F6A8;',      // 🚨
-            tip: '&#x1F4A1;',        // 💡
-            news: '&#x1F4F0;',       // 📰
-            promotional: '&#x1F4E3;'  // 📣
-        };
-        
-        const BUTTON_LABELS = {
-            send: 'Send',
-            cancel: 'Cancel',
-            confirm: 'Confirm',
-            dismiss: 'Dismiss',
-            snooze: 'Snooze',
-            pause: 'Pause',
-            resume: 'Resume',
-            close: 'Close'
+        let autoCloseTimer = null;
+
+        // Default notification icons
+        const ICONS = {
+            info: 'ℹ️',
+            success: '✅',
+            warning: '⚠️',
+            error: '❌',
+            custom: '🔔'
         };
 
-        // Check if electronAPI is available
-        if (window.electronAPI && window.electronAPI.ipcRenderer) {
-            console.log('ElectronAPI found, setting up IPC listeners');
-            
-            // Main notification data handler
-            window.electronAPI.ipcRenderer.on('notification-data', (event, data) => {
-                console.log('Received notification data:', data);
-                notificationData = data;
-                notificationId = data.id;
-                setupNotification(data);
-            });
-        } else {
-            console.error('ElectronAPI not found! Preload script may not be working.');
-            setTimeout(() => setupDefaultNotification(), 500);
+        // Initialize with default data if none received
+        function initializeDefault() {
+            console.log('[NOTIFICATION] Initializing with default data');
+            const defaultData = {
+                type: 'info',
+                title: 'Test Notification',
+                message: 'This is a test notification to verify the system is working.',
+                duration: 5000,
+                theme: getSystemTheme()
+            };
+            setupNotification(defaultData);
         }
 
-        // Set up additional handlers only if electronAPI is available
-        if (window.electronAPI && window.electronAPI.ipcRenderer) {
-            // Update handler
-            window.electronAPI.ipcRenderer.on('notification-update', (event, data) => {
-                console.log('Received notification update:', data);
-                notificationData = { ...notificationData, ...data };
-                updateNotificationContent(notificationData);
-            });
-
-            // Progress update handler
-            window.electronAPI.ipcRenderer.on('progress-update', (event, progress) => {
-                console.log('Progress update:', progress);
-                updateProgress(progress);
-            });
-
-            // Progress indeterminate handler
-            window.electronAPI.ipcRenderer.on('progress-indeterminate', (event, indeterminate) => {
-                setProgressIndeterminate(indeterminate);
-            });
-
-            // Animation handlers
-            window.electronAPI.ipcRenderer.on('play-animation', (event, animation) => {
-                playEntranceAnimation(animation);
-            });
-
-            window.electronAPI.ipcRenderer.on('play-close-animation', () => {
-                playExitAnimation();
-            });
+        function getSystemTheme() {
+            if (typeof window !== 'undefined' && window.matchMedia) {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            return 'light';
         }
 
         function setupNotification(data) {
-            const container = document.getElementById('notificationContainer');
-            if (!container) {
-                console.error('Notification container not found');
+            console.log('[NOTIFICATION] Setting up notification with data:', data);
+            
+            try {
+                notificationData = data;
+                const notification = document.getElementById('notification');
+                const icon = document.getElementById('icon');
+                const title = document.getElementById('title');
+                const message = document.getElementById('message');
+                const progressBar = document.getElementById('progressBar');
+
+                if (!notification || !icon || !title || !message || !progressBar) {
+                    throw new Error('Required DOM elements not found');
+                }
+
+                // Set content
+                title.textContent = data.title || 'Notification';
+                message.textContent = data.message || '';
+                icon.textContent = data.icon || ICONS[data.type] || ICONS.info;
+
+                // Apply theme and type classes
+                notification.className = 'notification';
+                
+                if (data.type) {
+                    notification.classList.add(`type-${data.type}`);
+                }
+                
+                if (data.theme) {
+                    notification.classList.add(`theme-${data.theme}`);
+                }
+
+                // Show notification
+                setTimeout(() => {
+                    notification.classList.add('show');
+                    console.log('[NOTIFICATION] Animation started');
+                }, 100);
+
+                // Setup auto-close
+                setupAutoClose(data.duration);
+
+                console.log('[NOTIFICATION] Setup completed successfully');
+
+            } catch (error) {
+                console.error('[NOTIFICATION SETUP ERROR]', error);
+                // Fallback to show something
+                document.body.innerHTML = `
+                    <div style="padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; font-family: system-ui;">
+                        <strong>Notification Error:</strong> ${error.message}<br>
+                        <small>Check console for details</small>
+                    </div>
+                `;
+            }
+        }
+
+        function setupAutoClose(duration) {
+            const progressBar = document.getElementById('progressBar');
+            
+            // Clear any existing timer
+            if (autoCloseTimer) {
+                clearTimeout(autoCloseTimer);
+            }
+
+            // If duration is 0 or null, don't auto-close
+            if (!duration || duration <= 0) {
+                if (progressBar) {
+                    progressBar.style.display = 'none';
+                }
+                console.log('[NOTIFICATION] Auto-close disabled');
                 return;
             }
 
-            // Apply theme and base styling
-            applyTheme(container, data);
-            
-            // Set up basic content
-            setupBasicContent(container, data);
-            
-            // Set up type-specific content
-            setupTypeSpecificContent(container, data);
-            
-            // Set up priority indicator
-            setupPriorityIndicator(container, data);
-            
-            // Set up badge if applicable
-            setupBadge(container, data);
-            
-            // Set up drag functionality if enabled
-            setupDragFunctionality(container, data);
-            
-            // Set up auto-close logic
-            setupAutoClose(container, data);
-            
-            // Play entrance animation
-            setTimeout(() => playEntranceAnimation(data.animation || 'slide'), 100);
-        }
+            console.log(`[NOTIFICATION] Auto-close set for ${duration}ms`);
 
-        function applyTheme(container, data) {
-            const themeClass = data.theme ? 'theme-' + data.theme : 'theme-windows';
-            const colorSchemeClass = data.colorScheme === 'dark' ? 'dark' : '';
-            const priorityClass = data.priority ? 'priority-' + data.priority : 'priority-normal';
-            
-            container.className = `notification-container ${data.type || 'info'} ${themeClass} ${colorSchemeClass} ${priorityClass}`.trim();
-        }
-
-        function setupBasicContent(container, data) {
-            const icon = container.querySelector('.notification-icon');
-            const title = container.querySelector('.notification-title');
-            const subtitle = container.querySelector('.notification-subtitle');
-            const message = container.querySelector('.notification-message');
-            const time = container.querySelector('.notification-time');
-            const image = container.querySelector('.notification-image');
-            
-            // Set icon
-            if (icon) {
-                icon.innerHTML = data.icon || NOTIFICATION_ICONS[data.type] || NOTIFICATION_ICONS.info;
+            // Setup progress bar animation
+            if (progressBar) {
+                progressBar.style.animation = `progress ${duration}ms linear forwards`;
             }
-            
-            // Set text content
-            if (title) title.textContent = data.title || 'Notification';
-            if (subtitle && data.subtitle) {
-                subtitle.textContent = data.subtitle;
-                subtitle.style.display = 'block';
-            }
-            if (message) message.textContent = data.message || '';
-            if (time) time.textContent = data.timestamp || new Date().toLocaleTimeString().slice(0, 5);
-            
-            // Set image if provided
-            if (image && data.image) {
-                const img = image.querySelector('img');
-                if (img) {
-                    img.src = data.image;
-                    image.style.display = 'block';
-                }
-            }
-        }
 
-        function setupTypeSpecificContent(container, data) {
-            switch (data.type) {
-                case 'progress':
-                case 'download':
-                case 'upload':
-                case 'loading':
-                    setupProgressContent(container, data);
-                    break;
-                    
-                case 'reply':
-                case 'input':
-                    setupReplyContent(container, data);
-                    break;
-                    
-                case 'confirmation':
-                    setupConfirmationContent(container, data);
-                    break;
-                    
-                case 'achievement':
-                case 'celebration':
-                    setupAchievementContent(container, data);
-                    break;
-                    
-                case 'weather':
-                    setupWeatherContent(container, data);
-                    break;
-                    
-                case 'update':
-                case 'system':
-                    setupUpdateContent(container, data);
-                    break;
-                    
-                case 'reminder':
-                case 'calendar':
-                    setupReminderContent(container, data);
-                    break;
-                    
-                default:
-                    setupBasicAutoClose(container, data);
-                    break;
-            }
-            
-            // Set up action buttons if provided
-            if (data.actions && data.actions.length > 0) {
-                setupActionButtons(container, data.actions);
-            }
-        }
-
-        function setupProgressContent(container, data) {
-            const progressContainer = container.querySelector('.progress-container');
-            const progressText = container.querySelector('.progress-text');
-            const progressSpeed = container.querySelector('.progress-speed');
-            const progressTime = container.querySelector('.progress-time');
-            const progressActions = container.querySelector('.progress-actions');
-            
-            if (progressContainer) {
-                progressContainer.style.display = 'block';
-                
-                // Set initial progress
-                updateProgress(data.progress || 0);
-                
-                // Set indeterminate if specified
-                if (data.indeterminate) {
-                    setProgressIndeterminate(true);
-                }
-                
-                // Show speed and time if provided
-                if (progressSpeed && data.speed) {
-                    progressSpeed.textContent = data.speed;
-                    progressSpeed.style.display = 'block';
-                }
-                
-                if (progressTime && data.timeRemaining) {
-                    progressTime.textContent = data.timeRemaining;
-                    progressTime.style.display = 'block';
-                }
-                
-                // Show action buttons if enabled
-                if (progressActions && (data.showCancel || data.showPause)) {
-                    const pauseBtn = progressActions.querySelector('.progress-pause');
-                    const cancelBtn = progressActions.querySelector('.progress-cancel');
-                    
-                    if (data.showPause && pauseBtn) {
-                        pauseBtn.style.display = 'inline-block';
-                    }
-                    if (data.showCancel && cancelBtn) {
-                        cancelBtn.style.display = 'inline-block';
-                    }
-                    
-                    if (data.showCancel || data.showPause) {
-                        progressActions.style.display = 'block';
-                    }
-                }
-            }
-        }
-
-        function setupReplyContent(container, data) {
-            const replyContainer = container.querySelector('.reply-container');
-            const input = container.querySelector('.reply-input');
-            const textarea = container.querySelector('.reply-textarea');
-            const validation = container.querySelector('.input-validation');
-            
-            if (replyContainer) {
-                replyContainer.style.display = 'block';
-                
-                // Choose input type
-                const activeInput = data.multiline ? textarea : input;
-                const inactiveInput = data.multiline ? input : textarea;
-                
-                activeInput.style.display = 'block';
-                inactiveInput.style.display = 'none';
-                
-                // Set placeholder
-                activeInput.placeholder = data.placeholder || 'Type your reply...';
-                
-                // Set input attributes
-                if (data.maxLength) activeInput.maxLength = data.maxLength;
-                if (data.inputType && !data.multiline) input.type = data.inputType;
-                if (data.required) activeInput.required = true;
-                
-                // Focus after animation
-                setTimeout(() => activeInput.focus(), 200);
-                
-                // Set up validation if provided
-                if (data.validation) {
-                    activeInput.addEventListener('input', () => {
-                        validateInput(activeInput, data.validation, validation);
-                    });
-                }
-            }
-        }
-
-        function setupConfirmationContent(container, data) {
-            setupActionButtons(container, [
-                { 
-                    id: 'confirm', 
-                    label: data.confirmText || 'Confirm', 
-                    type: data.destructive ? 'danger' : 'primary' 
-                },
-                { 
-                    id: 'cancel', 
-                    label: data.cancelText || 'Cancel', 
-                    type: 'secondary' 
-                }
-            ]);
-        }
-
-        function setupAchievementContent(container, data) {
-            const achievementContent = container.querySelector('.achievement-content');
-            const level = container.querySelector('.achievement-level');
-            const points = container.querySelector('.achievement-points');
-            const confetti = container.querySelector('.confetti-container');
-            
-            if (achievementContent) {
-                achievementContent.style.display = 'block';
-                
-                if (level && data.level) {
-                    level.textContent = data.level;
-                }
-                
-                if (points && data.points) {
-                    points.textContent = `+${data.points} points`;
-                }
-                
-                // Add gradient effect
-                if (data.gradient) {
-                    container.classList.add('gradient-bg');
-                }
-                
-                // Show confetti
-                if (data.showConfetti && confetti) {
-                    createConfetti(confetti);
-                }
-            }
-        }
-
-        function setupWeatherContent(container, data) {
-            const weatherContent = container.querySelector('.weather-content');
-            const temperature = container.querySelector('.weather-temperature');
-            const condition = container.querySelector('.weather-condition');
-            const humidity = container.querySelector('.weather-humidity');
-            const location = container.querySelector('.weather-location');
-            
-            if (weatherContent) {
-                weatherContent.style.display = 'block';
-                
-                if (temperature && data.temperature) {
-                    temperature.textContent = data.temperature;
-                }
-                
-                if (condition && data.condition) {
-                    condition.textContent = data.condition;
-                }
-                
-                if (humidity && data.humidity) {
-                    humidity.textContent = `Humidity: ${data.humidity}`;
-                }
-                
-                if (location && data.location) {
-                    location.textContent = data.location;
-                }
-            }
-        }
-
-        function setupUpdateContent(container, data) {
-            const updateContent = container.querySelector('.update-content');
-            const version = container.querySelector('.update-version');
-            const mandatory = container.querySelector('.update-mandatory');
-            
-            if (updateContent) {
-                updateContent.style.display = 'block';
-                
-                if (version && data.version) {
-                    version.textContent = `Version ${data.version}`;
-                }
-                
-                if (mandatory && data.mandatory) {
-                    mandatory.style.display = 'block';
-                }
-                
-                // Add action buttons for updates
-                const actions = [
-                    { id: 'update', label: 'Update Now', type: 'primary' }
-                ];
-                
-                if (!data.mandatory) {
-                    actions.push({ id: 'later', label: 'Later', type: 'secondary' });
-                }
-                
-                if (data.changelogUrl) {
-                    actions.push({ id: 'changelog', label: 'View Changes', type: 'secondary' });
-                }
-                
-                setupActionButtons(container, actions);
-            }
-        }
-
-        function setupReminderContent(container, data) {
-            const snoozeOptions = container.querySelector('.snooze-options');
-            
-            // Set up main action buttons
-            setupActionButtons(container, [
-                { id: 'dismiss', label: 'Dismiss', type: 'primary' },
-                { id: 'snooze', label: 'Snooze', type: 'secondary' }
-            ]);
-            
-            // Set up snooze options if provided
-            if (data.snoozeOptions && data.snoozeOptions.length > 0 && snoozeOptions) {
-                const buttonsContainer = snoozeOptions.querySelector('.snooze-buttons');
-                if (buttonsContainer) {
-                    buttonsContainer.innerHTML = '';
-                    
-                    data.snoozeOptions.forEach(minutes => {
-                        const btn = document.createElement('button');
-                        btn.className = 'snooze-btn';
-                        btn.dataset.minutes = minutes.toString();
-                        btn.textContent = formatSnoozeTime(minutes);
-                        btn.onclick = () => snoozeNotification(minutes);
-                        buttonsContainer.appendChild(btn);
-                    });
-                }
-            }
-        }
-
-        function setupActionButtons(container, actions) {
-            const actionButtons = container.querySelector('.action-buttons');
-            if (!actionButtons || !actions.length) return;
-            
-            actionButtons.innerHTML = '';
-            
-            actions.forEach(action => {
-                const button = document.createElement('button');
-                button.className = `action-button ${action.type || 'secondary'}`;
-                button.textContent = action.label;
-                button.onclick = () => handleActionClick(action.id, action);
-                
-                if (action.icon) {
-                    button.innerHTML = `${action.icon} ${action.label}`;
-                }
-                
-                actionButtons.appendChild(button);
-            });
-            
-            actionButtons.style.display = 'flex';
-        }
-
-        function setupPriorityIndicator(container, data) {
-            const priorityIndicator = container.querySelector('.priority-indicator');
-            if (priorityIndicator && data.priority && data.priority !== 'normal') {
-                priorityIndicator.className = `priority-indicator priority-${data.priority}`;
-            }
-        }
-
-        function setupBadge(container, data) {
-            const badge = container.querySelector('.notification-badge');
-            if (badge && data.badge) {
-                const badgeCount = badge.querySelector('.badge-count');
-                
-                if (data.badge.count && data.badge.count > 0) {
-                    if (badgeCount) badgeCount.textContent = data.badge.count.toString();
-                    badge.style.display = 'block';
-                    
-                    if (data.badge.color) {
-                        badge.style.backgroundColor = data.badge.color;
-                    }
-                }
-            }
-        }
-
-        function setupDragFunctionality(container, data) {
-            // This would implement drag-to-dismiss functionality
-            // Implementation details would depend on specific requirements
-        }
-
-        function setupBasicAutoClose(container, data) {
-            const autoProgress = container.querySelector('.notification-progress');
-            
-            if (autoProgress && !data.fixed && !data.requireInteraction && !data.persistent) {
-                const basicTypes = ['info', 'success', 'warning', 'error', 'custom', 'achievement', 'weather', 'tip', 'news'];
-                
-                if (basicTypes.includes(data.type)) {
-                    autoProgress.style.animation = 'none';
-                    autoProgress.offsetHeight; // Trigger reflow
-                    autoProgress.style.animation = `progress ${(data.duration || 5000) / 1000}s linear forwards`;
-                }
-            } else if (autoProgress) {
-                autoProgress.style.width = '0%';
-            }
-        }
-
-        function updateNotificationContent(data) {
-            const container = document.getElementById('notificationContainer');
-            if (container) {
-                setupBasicContent(container, data);
-                applyTheme(container, data);
-            }
-        }
-
-        function updateProgress(progress) {
-            const progressValue = Math.max(0, Math.min(100, progress));
-            const container = document.getElementById('notificationContainer');
-            const progressBar = container.querySelector('.progress-bar');
-            const progressText = container.querySelector('.progress-text');
-
-            if (progressBar) progressBar.style.width = `${progressValue}%`;
-            if (progressText) progressText.textContent = `${Math.round(progressValue)}%`;
-
-            // Auto-complete handling
-            if (progressValue >= 100) {
-                setTimeout(() => {
-                    const container = document.getElementById('notificationContainer');
-                    if (container) {
-                        container.classList.remove('progress', 'download', 'upload', 'loading');
-                        container.classList.add('success');
-                        
-                        const icon = container.querySelector('.notification-icon');
-                        const title = container.querySelector('.notification-title');
-                        if (icon) icon.innerHTML = NOTIFICATION_ICONS.success;
-                        if (title) title.textContent = 'Completed';
-                        
-                        setTimeout(() => closeNotification(), 2000);
-                    }
-                }, 500);
-            }
-        }
-
-        function setProgressIndeterminate(indeterminate) {
-            const container = document.getElementById('notificationContainer');
-            const progressBar = container.querySelector('.progress-bar');
-            const progressSpinner = container.querySelector('.progress-spinner');
-            
-            if (indeterminate) {
-                if (progressBar) progressBar.style.display = 'none';
-                if (progressSpinner) progressSpinner.style.display = 'block';
-            } else {
-                if (progressBar) progressBar.style.display = 'block';
-                if (progressSpinner) progressSpinner.style.display = 'none';
-            }
-        }
-
-        function playEntranceAnimation(animation) {
-            const container = document.getElementById('notificationContainer');
-            if (!container) return;
-            
-            container.classList.add('show');
-            
-            switch (animation) {
-                case 'bounce':
-                    container.classList.add('animate-bounce');
-                    break;
-                case 'zoom':
-                    container.classList.add('animate-zoom');
-                    break;
-                case 'flip':
-                    container.classList.add('animate-flip');
-                    break;
-                case 'fade':
-                    container.classList.add('animate-fade');
-                    break;
-                case 'slide':
-                default:
-                    container.classList.add('animate-slide');
-                    break;
-            }
-        }
-
-        function playExitAnimation() {
-            const container = document.getElementById('notificationContainer');
-            if (container) {
-                container.classList.add('hiding');
-                container.classList.remove('show');
-            }
+            // Setup auto-close timer
+            autoCloseTimer = setTimeout(() => {
+                console.log('[NOTIFICATION] Auto-closing notification');
+                closeNotification();
+            }, duration);
         }
 
         function closeNotification() {
-            playExitAnimation();
-            setTimeout(() => {
+            console.log('[NOTIFICATION] Closing notification');
+            
+            try {
+                // Clear timer
+                if (autoCloseTimer) {
+                    clearTimeout(autoCloseTimer);
+                    autoCloseTimer = null;
+                }
+
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.classList.add('hide');
+                    notification.classList.remove('show');
+                }
+
+                // Close window after animation
+                setTimeout(() => {
+                    console.log('[NOTIFICATION] Closing window');
+                    if (window.electronAPI && window.electronAPI.ipcRenderer) {
+                        window.electronAPI.ipcRenderer.send('notification-closed', {
+                            id: notificationData?.id
+                        });
+                    }
+                    window.close();
+                }, 300);
+
+            } catch (error) {
+                console.error('[NOTIFICATION CLOSE ERROR]', error);
+                // Force close if error
                 window.close();
-            }, 300);
-        }
-
-        function sendReply() {
-            const replyInput = document.querySelector('.reply-input:not([style*="display: none"])') || 
-                              document.querySelector('.reply-textarea:not([style*="display: none"])');
-            
-            if (replyInput && notificationId) {
-                const response = replyInput.value.trim();
-                
-                // Validate if required
-                if (notificationData.required && !response) {
-                    showValidationError('This field is required');
-                    return;
-                }
-                
-                // Validate with regex if provided
-                if (notificationData.validation && !notificationData.validation.test(response)) {
-                    showValidationError('Invalid input format');
-                    return;
-                }
-                
-                if (window.electronAPI && window.electronAPI.ipcRenderer) {
-                    window.electronAPI.ipcRenderer.send('reply-notification-response', { 
-                        id: notificationId, 
-                        response: response 
-                    });
-                }
-                closeNotification();
             }
         }
 
-        function cancelReply() {
-            if (notificationId && window.electronAPI && window.electronAPI.ipcRenderer) {
-                window.electronAPI.ipcRenderer.send('reply-notification-response', { 
-                    id: notificationId, 
-                    response: null 
+        // Listen for notification data from main process
+        function setupIPCListeners() {
+            if (window.electronAPI && window.electronAPI.ipcRenderer) {
+                console.log('[NOTIFICATION] Setting up IPC listeners');
+                
+                window.electronAPI.ipcRenderer.on('notification-data', (event, data) => {
+                    console.log('[NOTIFICATION] Received data from main process:', data);
+                    setupNotification(data);
                 });
-            }
-            closeNotification();
-        }
 
-        function handleActionClick(actionId, action) {
-            console.log(`Action clicked: ${actionId}`);
-            
-            switch (actionId) {
-                case 'confirm':
-                    window.electronAPI.ipcRenderer.send('notification-action', {
-                        id: notificationId,
-                        action: 'confirm'
-                    });
-                    break;
-                case 'cancel':
-                    window.electronAPI.ipcRenderer.send('notification-action', {
-                        id: notificationId,
-                        action: 'cancel'
-                    });
-                    break;
-                case 'snooze':
-                    showSnoozeOptions();
-                    return; // Don't close yet
-                case 'dismiss':
-                    window.electronAPI.ipcRenderer.send('notification-action', {
-                        id: notificationId,
-                        action: 'dismiss'
-                    });
-                    break;
-                default:
-                    window.electronAPI.ipcRenderer.send('notification-action', {
-                        id: notificationId,
-                        action: actionId,
-                        data: action
-                    });
-                    break;
-            }
-            
-            closeNotification();
-        }
+                window.electronAPI.ipcRenderer.on('close-notification', () => {
+                    console.log('[NOTIFICATION] Received close command');
+                    closeNotification();
+                });
 
-        function showSnoozeOptions() {
-            const snoozeOptions = document.querySelector('.snooze-options');
-            if (snoozeOptions) {
-                snoozeOptions.style.display = 'block';
-            }
-        }
-
-        function snoozeNotification(minutes) {
-            window.electronAPI.ipcRenderer.send('notification-action', {
-                id: notificationId,
-                action: 'snooze',
-                data: { minutes }
-            });
-            closeNotification();
-        }
-
-        function pauseProgress() {
-            window.electronAPI.ipcRenderer.send('notification-action', {
-                id: notificationId,
-                action: 'pause'
-            });
-        }
-
-        function cancelProgress() {
-            window.electronAPI.ipcRenderer.send('notification-action', {
-                id: notificationId,
-                action: 'cancel'
-            });
-            closeNotification();
-        }
-
-        function validateInput(input, validation, validationElement) {
-            const isValid = validation.test(input.value);
-            
-            if (isValid) {
-                input.classList.remove('invalid');
-                if (validationElement) validationElement.style.display = 'none';
             } else {
-                input.classList.add('invalid');
-            }
-            
-            return isValid;
-        }
-
-        function showValidationError(message) {
-            const validation = document.querySelector('.input-validation');
-            if (validation) {
-                validation.textContent = message;
-                validation.style.display = 'block';
-            }
-        }
-
-        function createConfetti(container) {
-            // Create confetti animation
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti-piece';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.animationDelay = Math.random() * 3 + 's';
-                confetti.style.backgroundColor = getRandomColor();
-                container.appendChild(confetti);
-            }
-        }
-
-        function getRandomColor() {
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        function formatSnoozeTime(minutes) {
-            if (minutes < 60) {
-                return `${minutes} min`;
-            } else {
-                const hours = Math.floor(minutes / 60);
-                const remainingMinutes = minutes % 60;
-                if (remainingMinutes === 0) {
-                    return `${hours} hour${hours > 1 ? 's' : ''}`;
-                } else {
-                    return `${hours}h ${remainingMinutes}m`;
-                }
+                console.warn('[NOTIFICATION] ElectronAPI not available, using default data');
+                setTimeout(initializeDefault, 1000);
             }
         }
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if (notificationData?.type === 'reply' || notificationData?.type === 'input') {
-                    cancelReply();
-                } else {
+                console.log('[NOTIFICATION] Escape key pressed');
+                closeNotification();
+            }
+        });
+
+        // Click to close (optional)
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'notification' || e.target.closest('.notification')) {
+                if (notificationData?.clickToClose !== false) {
+                    console.log('[NOTIFICATION] Click to close');
                     closeNotification();
                 }
-            } else if (e.key === 'Enter' && (notificationData?.type === 'reply' || notificationData?.type === 'input')) {
-                sendReply();
             }
         });
 
@@ -1909,28 +436,17 @@ html, body {
             e.preventDefault();
         });
 
-        function setupDefaultNotification() {
-            console.log('Setting up default notification content');
-            const defaultData = {
-                id: 'default-notification',
-                type: 'info',
-                title: 'Test Notification',
-                message: 'This is a test notification to verify the system is working.',
-                theme: 'windows',
-                colorScheme: 'light',
-                priority: 'normal'
-            };
-            
-            notificationData = defaultData;
-            notificationId = defaultData.id;
-            setupNotification(defaultData);
-        }
+        // Initialize
+        console.log('[NOTIFICATION] Starting initialization');
         
-        // Cleanup on unload
-        window.addEventListener('beforeunload', () => {
-            animationTimeouts.forEach(timeout => clearTimeout(timeout));
-            if (progressInterval) clearInterval(progressInterval);
-        });
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupIPCListeners);
+        } else {
+            setupIPCListeners();
+        }
+
+        console.log('[NOTIFICATION] Script initialization completed');
     </script>
 </body>
 </html>

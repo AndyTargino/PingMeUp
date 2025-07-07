@@ -1,347 +1,230 @@
 # PingMeUp 🔔
 
-**Professional notification system for Electron applications with 20+ notification types, rich content, animations, and cross-platform theming.**
+Professional notification system for Electron applications with native OS-like experience.
 
-[![npm version](https://badge.fury.io/js/pingmeup.svg)](https://badge.fury.io/js/pingmeup)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+## Features
 
-## ✨ Features
+- 🎨 **Native-like design** - Matches Windows, macOS, and Linux notification styles
+- ⚡ **Simple API** - Easy to use with minimal configuration
+- 🎯 **Multiple types** - Info, success, warning, error notifications
+- ⏱️ **Customizable duration** - 5-second default, customizable, or persistent notifications
+- 🎨 **Theme support** - Light/dark themes with automatic system detection
+- 📍 **Positioning** - Top/bottom, left/right positioning options
+- 🔍 **Real-time debugging** - Comprehensive console logging for troubleshooting
+- 🏗️ **TypeScript support** - Full type definitions included
 
-- **20+ Notification Types**: From basic info/success/warning/error to advanced achievement, weather, progress, and interactive notifications
-- **Rich Content Support**: Images, achievements with confetti, weather widgets, progress bars, reply inputs
-- **Cross-Platform Theming**: Native Windows, macOS, and Linux styling with automatic detection
-- **Professional Animations**: Slide, bounce, zoom, flip, fade animations with accessibility support
-- **Priority System**: Critical, high, normal, low priority with intelligent queuing
-- **Interactive Elements**: Reply notifications, confirmation dialogs, progress controls
-- **Smart Auto-Close**: Context-aware auto-closing that respects fixed and interactive notifications
-- **Grouping & Badges**: Organize notifications by category with visual badges
-- **Dark/Light Mode**: Automatic system color scheme detection
-- **Event-Driven**: Comprehensive event system for tracking interactions and analytics
-- **TypeScript**: Full TypeScript support with comprehensive type definitions
-
-## 🚀 Quick Start
-
-### Installation
+## Installation
 
 ```bash
 npm install pingmeup
+# or
+yarn add pingmeup
 ```
+
+## Quick Start
+
+```javascript
+const { ElectronNotificationManager } = require('pingmeup');
+
+// Initialize the notification manager
+const notificationManager = new ElectronNotificationManager();
+
+// Show different types of notifications
+await notificationManager.info('Hello!', 'This is an info notification');
+await notificationManager.success('Success!', 'Operation completed');
+await notificationManager.warning('Warning!', 'Something needs attention');
+await notificationManager.error('Error!', 'Something went wrong');
+```
+
+## API Reference
+
+### Constructor
+
+```javascript
+const notificationManager = new ElectronNotificationManager(defaultOptions);
+```
+
+**Default Options:**
+- `type`: `'info'` - Default notification type
+- `duration`: `5000` - Default duration in milliseconds (0 = no auto-close)
+- `theme`: Auto-detected system theme (`'light'` | `'dark'` | `'windows'` | `'macos'` | `'linux'`)
+- `clickToClose`: `true` - Allow click to close
+- `position`: `'top-right'` - Default position
+
+### Methods
+
+#### `show(options)` - Show Custom Notification
+
+```javascript
+const id = await notificationManager.show({
+  title: 'Custom Title',
+  message: 'Custom message',
+  type: 'info', // 'info' | 'success' | 'warning' | 'error'
+  duration: 5000, // milliseconds, 0 = no auto-close
+  icon: '🔔', // Custom emoji or icon
+  theme: 'dark', // 'light' | 'dark' | 'windows' | 'macos' | 'linux'
+  clickToClose: true,
+  position: 'top-right' // 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+});
+```
+
+#### Convenience Methods
+
+```javascript
+// Info notification (5 seconds)
+await notificationManager.info(title, message, duration?);
+
+// Success notification (5 seconds)
+await notificationManager.success(title, message, duration?);
+
+// Warning notification (7 seconds)
+await notificationManager.warning(title, message, duration?);
+
+// Error notification (no auto-close)
+await notificationManager.error(title, message, duration?);
+```
+
+#### Management Methods
+
+```javascript
+// Close specific notification
+notificationManager.close(id);
+
+// Close all notifications
+notificationManager.closeAll();
+
+// Get active notification count
+const count = notificationManager.getActiveCount();
+```
+
+## Examples
 
 ### Basic Usage
 
-```typescript
-import { ElectronNotificationManager } from 'pingmeup';
+```javascript
+const { app, BrowserWindow } = require('electron');
+const { ElectronNotificationManager } = require('pingmeup');
 
-// Initialize the notification manager
-const notificationManager = new ElectronNotificationManager({
-    theme: 'auto', // windows, macos, linux, or auto
-    position: 'bottom-right',
-    maxVisible: 4
-});
+let notificationManager;
 
-// Create a simple notification
-await notificationManager.info('Hello!', 'This is your first PingMeUp notification');
+app.whenReady().then(() => {
+  // Initialize with custom defaults
+  notificationManager = new ElectronNotificationManager({
+    theme: 'windows',
+    position: 'top-right',
+    duration: 4000
+  });
 
-// Create a success notification with custom options
-await notificationManager.success('Task Completed', 'Your file has been uploaded successfully', {
-    duration: 3000,
-    animation: 'bounce'
-});
-
-// Create a progress notification
-const progressId = await notificationManager.progress('Downloading...', 'Downloading important-file.zip');
-
-// Update progress
-notificationManager.updateProgress(progressId, 45);
-
-// Create an interactive reply notification
-await notificationManager.reply('Quick Reply', 'What do you think about this?', {
-    placeholder: 'Type your response...'
-});
-
-// Create an achievement notification with confetti
-await notificationManager.achievement('Level Up!', 'You reached level 10!', {
-    level: 'Level 10',
-    points: 500,
-    showConfetti: true,
-    animation: 'bounce'
+  // Show welcome notification
+  notificationManager.info(
+    'Welcome!', 
+    'Application started successfully'
+  );
 });
 ```
 
-## 📋 Notification Types
+### Advanced Usage
 
-### Basic Types
-- **info** - General information
-- **success** - Success messages with celebration
-- **warning** - Warning alerts with high priority
-- **error** - Error messages requiring attention
-- **custom** - Custom styled notifications
+```javascript
+// Long-running operation with progress
+const id = await notificationManager.show({
+  title: 'Processing...',
+  message: 'This may take a while',
+  type: 'info',
+  duration: 0, // Don't auto-close
+  clickToClose: false
+});
 
-### Interactive Types
-- **progress** - Progress bars with real-time updates
-- **reply** - Text input for user responses
-- **confirmation** - Yes/No confirmation dialogs
-- **input** - Form input with validation
+// Update notification when done
+setTimeout(() => {
+  notificationManager.close(id);
+  notificationManager.success('Done!', 'Processing completed');
+}, 5000);
+```
 
-### Advanced Types
-- **achievement** - Gamification with confetti and levels
-- **update** - System/app update notifications
-- **download/upload** - File transfer with progress
-- **system** - System-level notifications
-- **security** - Security alerts and warnings
-- **reminder** - Reminders with snooze options
-- **calendar** - Calendar events and meetings
+### Different Themes
 
-### Creative Types
-- **weather** - Weather information with rich data
-- **celebration** - Special celebration notifications
-- **loading** - Loading states with spinners
-- **alert** - High-priority alerts
-- **tip** - Helpful tips and hints
-- **news** - News and announcements
-- **promotional** - Marketing and promotional content
+```javascript
+// Windows style
+notificationManager.show({
+  title: 'Windows Style',
+  message: 'Square corners, Segoe UI font',
+  theme: 'windows'
+});
 
-## 🎨 Customization
+// macOS style  
+notificationManager.show({
+  title: 'macOS Style',
+  message: 'Rounded corners, SF Pro font',
+  theme: 'macos'
+});
 
-### Themes
-
-PingMeUp automatically detects your operating system and applies the appropriate theme:
-
-- **Windows**: Fluent Design inspired styling
-- **macOS**: Apple Human Interface Guidelines styling
-- **Linux**: Clean, modern styling with Ubuntu font stack
-
-```typescript
-const manager = new ElectronNotificationManager({
-    theme: 'macos', // Force specific theme
-    colorScheme: 'dark' // Force dark mode
+// Linux style
+notificationManager.show({
+  title: 'Linux Style',
+  message: 'Ubuntu font, moderate rounding',
+  theme: 'linux'
 });
 ```
 
-### Animations
+## Debugging
 
-Choose from multiple animation styles:
+All operations are logged to the console with prefixed tags:
 
-```typescript
-await manager.info('Animated!', 'This notification bounces in', {
-    animation: 'bounce' // slide, fade, bounce, zoom, flip, none
-});
+```
+[NOTIFICATION MANAGER] Initialized with defaults: {...}
+[NOTIFICATION MANAGER] Creating notification notification-1: {...}
+[NOTIFICATION notification-1] Template loaded successfully
+[NOTIFICATION notification-1] Setting up notification with data: {...}
+[NOTIFICATION notification-1] Auto-close set for 5000ms
 ```
 
-### Priority System
+## Error Handling
 
-Control notification priority and behavior:
+The system includes comprehensive error handling:
 
-```typescript
-await manager.error('Critical Error', 'Something went wrong!', {
-    priority: 'critical', // critical, high, normal, low
-    requireInteraction: true, // Must be manually dismissed
-    fixed: true // Never auto-closes
-});
-```
-
-## 🎯 Advanced Features
-
-### Event Handling
-
-```typescript
-// Listen to notification events
-manager.on('notification-created', (id, data) => {
-    console.log(`Notification ${id} created:`, data);
-});
-
-manager.on('notification-clicked', (id, data) => {
-    console.log(`Notification ${id} was clicked`);
-});
-
-manager.on('notification-closed', (id) => {
-    console.log(`Notification ${id} was closed`);
-});
-
-// Handle reply responses
-manager.on('reply-received', (id, response) => {
-    console.log(`Reply from ${id}: ${response}`);
-});
-```
-
-### Grouping Notifications
-
-```typescript
-// Group related notifications
-await manager.info('Group Test 1', 'Message 1', { category: 'updates' });
-await manager.info('Group Test 2', 'Message 2', { category: 'updates' });
-
-// Collapse/expand groups
-manager.collapseGroup('updates');
-manager.expandGroup('updates');
-
-// Close entire groups
-await manager.closeByCategory('updates');
-```
-
-### Queue Management
-
-```typescript
-// Configure queuing
-const manager = new ElectronNotificationManager({
-    enableQueueing: true,
-    maxVisible: 3
-});
-
-// Notifications will automatically queue when limit is reached
-// Higher priority notifications are shown first
-```
-
-### Statistics and Analytics
-
-```typescript
-// Get notification statistics
-const stats = manager.getStats();
-console.log(stats);
-/*
-{
-    total: 150,
-    shown: 145,
-    dismissed: 120,
-    clicked: 80,
-    averageDisplayTime: 4500,
-    byType: { info: 50, success: 30, error: 10, ... },
-    byPriority: { normal: 100, high: 35, critical: 15 }
-}
-*/
-```
-
-## 🛠️ Configuration Options
-
-```typescript
-interface NotificationConfig {
-    width?: number;                    // Default: 420
-    height?: number;                   // Default: 120
-    spacing?: number;                  // Default: 20
-    maxVisible?: number;               // Default: 6
-    defaultDuration?: number;          // Default: 5000ms
-    theme?: NotificationTheme;         // Default: auto-detected
-    position?: NotificationPosition;   // Default: 'bottom-right'
-    animation?: AnimationType;         // Default: 'slide'
-    sound?: NotificationSound;         // Default: { type: 'default', volume: 0.5 }
-    persistent?: boolean;              // Default: false
-    showInTaskbar?: boolean;           // Default: false
-    enableBadges?: boolean;            // Default: true
-    enableGrouping?: boolean;          // Default: true
-    enableQueueing?: boolean;          // Default: true
-    clickToClose?: boolean;            // Default: true
-    dragToClose?: boolean;             // Default: true
-    autoHideOnHover?: boolean;         // Default: false
-    enableRichNotifications?: boolean; // Default: true
+```javascript
+try {
+  await notificationManager.show({
+    title: 'Test',
+    message: 'Test message'
+  });
+} catch (error) {
+  console.error('Failed to show notification:', error);
 }
 ```
 
-## 🎮 Interactive Examples
+## Testing
 
-### Weather Notification
-```typescript
-await manager.weather('Current Weather', 'Partly cloudy with a chance of rain', {
-    temperature: '24°C',
-    condition: 'Partly Cloudy',
-    humidity: '65%',
-    location: 'New York, NY'
-});
+Run the included example to test the notification system:
+
+```bash
+cd example
+node simple-test.js
 ```
 
-### Achievement with Confetti
-```typescript
-await manager.achievement('Achievement Unlocked!', 'You completed 100 tasks!', {
-    level: 'Task Master',
-    points: 1000,
-    showConfetti: true,
-    gradient: true,
-    animation: 'bounce'
-});
-```
+This will show various notification types with different durations and settings.
 
-### Update Notification
-```typescript
-await manager.create({
-    type: 'update',
-    title: 'Update Available',
-    message: 'Version 2.0 is ready to install',
-    version: '2.0.0',
-    mandatory: false,
-    changelogUrl: 'https://example.com/changelog',
-    actions: [
-        { id: 'update', label: 'Update Now', type: 'primary' },
-        { id: 'later', label: 'Later', type: 'secondary' },
-        { id: 'changelog', label: 'View Changes', type: 'secondary' }
-    ]
-});
-```
+## Requirements
 
-## 🔧 Integration with Electron
+- Electron 20.0.0 or higher
+- Node.js 16.0.0 or higher
 
-### Main Process Setup
+## License
 
-```typescript
-// main.ts
-import { ElectronNotificationManager } from 'pingmeup';
+MIT License - see LICENSE file for details.
 
-const notificationManager = new ElectronNotificationManager();
+## Contributing
 
-// Handle IPC from renderer
-ipcMain.handle('show-notification', async (event, type, title, message) => {
-    return await notificationManager[type](title, message);
-});
-```
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-### Renderer Process
+## Support
 
-```typescript
-// renderer.ts
-window.electronAPI.ipcRenderer.invoke('show-notification', 'success', 'Done!', 'Task completed');
-```
-
-## 🎨 Styling and Theming
-
-PingMeUp comes with professional styling that adapts to your operating system:
-
-- **Backdrop filters** for modern glass effects
-- **CSS custom properties** for easy customization
-- **Responsive design** that works on any screen size
-- **Accessibility support** with reduced motion options
-- **High contrast mode** support
-
-## 📱 Accessibility
-
-- **Keyboard navigation** (Escape to close, Enter to confirm)
-- **Screen reader friendly** with proper ARIA labels
-- **Reduced motion support** for users with motion sensitivity
-- **High contrast mode** support
-- **Focus management** for interactive elements
-
-## 🚀 Performance
-
-- **Lightweight**: Minimal memory footprint
-- **Efficient rendering**: GPU-accelerated animations
-- **Smart queuing**: Prevents notification spam
-- **Automatic cleanup**: Memory leak prevention
-- **Lazy loading**: Resources loaded on demand
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Inspired by modern OS notification systems
-- Built with TypeScript and Electron
-- Design influenced by Material Design and Fluent Design principles
-
----
-
-**Made with ❤️ by AndyTargino**
-
-For more examples and detailed documentation, visit our [GitHub repository](https://github.com/AndyTargino/pingmeup).
+For issues and questions:
+- 🐛 [Report bugs](https://github.com/andytargino/pingmeup/issues)
+- 💬 [Discussions](https://github.com/andytargino/pingmeup/discussions)
+- 📧 Email: andytargino@outlook.com
