@@ -1,6 +1,6 @@
 {
   "name": "pingmeup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional notification system for Electron applications with 20+ notification types, rich content, animations, and cross-platform theming",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

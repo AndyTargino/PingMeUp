@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # TypeScript build outputs
-dist/
+# dist/
 build/
 *.tsbuildinfo
 
